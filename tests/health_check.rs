@@ -1,7 +1,6 @@
 use sqlx::types::Uuid;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use zero::configuration::{get_config, DatabaseSettings};
-use zero::startup::run;
 use zero::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
 
