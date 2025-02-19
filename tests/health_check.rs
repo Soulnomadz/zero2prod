@@ -3,6 +3,7 @@ use sqlx::{Connection, Executor, PgConnection, PgPool};
 use zero::configuration::{get_config, DatabaseSettings};
 use zero::telemetry::{get_subscriber, init_subscriber};
 use once_cell::sync::Lazy;
+use secrecy::ExposeSecret;
 
 use std::net::TcpListener;
 
@@ -65,7 +66,7 @@ async fn spawn_app() -> TestApp {
 }
 
 pub async fn config_database(config: &DatabaseSettings) -> PgPool {
-    let mut connection = PgConnection::connect(&config.connection_string_without_db())
+    let mut connection = PgConnection::connect(&config.connection_string_without_db().expose_secret())
         .await
         .expect("Failed to connect to database");
 
@@ -76,7 +77,7 @@ pub async fn config_database(config: &DatabaseSettings) -> PgPool {
         .expect("Failed to create database");
 
     // database migration
-    let pool = PgPool::connect(&config.connection_string())
+    let pool = PgPool::connect(&config.connection_string().expose_secret())
         .await
         .expect("Failed to connect to database");
 
