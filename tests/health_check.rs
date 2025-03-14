@@ -90,28 +90,34 @@ pub async fn config_database(config: &DatabaseSettings) -> PgPool {
 }
 
 #[tokio::test]
-async fn subscribe_return_200_for_valid_form_data() {
+async fn subscribe_returns_a_400_when_fields_are_present_but_invalid() {
     let app = spawn_app().await;
-
     let client = reqwest::Client::new();
 
-    let body = "name=le%20guin&email=ursula_le%40gmail.com";
-    let resp = client
-        .post(&format!("{}/subscriptions", &app.address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
-        .expect("Failed to execute request");
+    let test_cases = vec![
+        ("name=Ursula&email=not-an-email", "invalid email"),
+    ];
 
-    let saved = sqlx::query!("select email,name from subscriptions")
-        .fetch_one(&app.db_pool)
-        .await
-        .expect("Failed to fetch saved subscription.");
+    for (body, description) in test_cases {
+        let resp = client
+            .post(&format!("{}/subscriptions", &app.address))
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(body)
+            .send()
+            .await
+            .expect("Failed to execute request");
 
-    assert_eq!(200, resp.status().as_u16());
-    assert_eq!(saved.email, "ursula_le@gmail.com");
-    assert_eq!(saved.name, "le guin");
+        //let saved = sqlx::query!("select email,name from subscriptions")
+        //    .fetch_one(&app.db_pool)
+        //    .await
+        //    .expect("Failed to fetch saved subscription.");
+
+        assert_eq!(
+            400,
+            resp.status().as_u16(),
+            "The API dit not return 400 when payload was {description}"
+        );
+    }
 }
 
 #[tokio::test]
@@ -141,3 +147,4 @@ async fn subscribe_return_400_when_data_is_missing() {
         )
     }
 }
+

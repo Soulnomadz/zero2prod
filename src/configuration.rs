@@ -82,7 +82,7 @@ pub fn get_config() -> Result<Settings, config::ConfigError> {
 
     config::Config::builder()
         // load base configuration
-        .add_source(config::File::from(config_dir.join("base")).required(true))
+        .add_source(config::File::from(config_dir.join("base.yaml")).required(true))
         // load env-specified configuration
         .add_source(config::File::from(config_dir.join(env.as_str())).required(true))
         .build()?
